@@ -5,6 +5,9 @@
       {{ showForm ? 'Cancelar' : 'Nuevo Proveedor' }}
     </button>
 
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="success" class="success">{{ success }}</div>
+
     <form v-if="showForm" @submit.prevent="handleSave" class="form">
       <div class="form-group">
         <label for="nombre">Nombre:</label>
@@ -23,8 +26,6 @@
         <input v-model="formData.email" id="email" type="email" />
       </div>
       <button type="submit" class="btn-success">Guardar</button>
-      <div v-if="error" class="error">{{ error }}</div>
-      <div v-if="success" class="success">{{ success }}</div>
     </form>
 
     <table class="table" v-if="!loading">
@@ -101,12 +102,16 @@ const handleSave = async () => {
 }
 
 const editProveedor = (prov) => {
+  error.value = null
+  success.value = null
   formData.value = { ...prov }
   showForm.value = true
 }
 
 const deleteProveedor = async (id) => {
   if (!confirm('¿Estás seguro?')) return
+  error.value = null
+  success.value = null
   try {
     await proveedoresStore.deleteProveedor(id)
     success.value = 'Proveedor eliminado'

@@ -3,11 +3,21 @@ import { computed, ref } from 'vue'
 import apiClient from '../services/ApiService'
 import { getApiErrorMessage } from '../services/getApiErrorMessage'
 
+const normalizeRoleName = (role) => {
+  const roleName = role?.toLowerCase()
+
+  if (roleName === 'admin' || roleName === 'superadmin') return 'admin'
+  if (roleName === 'operador' || roleName === 'user') return 'operador'
+
+  return roleName || null
+}
+
 const getRoleName = (user) => {
-  if (typeof user?.rol === 'string') return user.rol.toLowerCase()
-  if (user?.rol?.nombre) return user.rol.nombre.toLowerCase()
-  if (user?.rol_id === 2) return 'admin'
-  if (user?.rol_id === 1) return 'operador'
+  const roleFromName = normalizeRoleName(user?.rol?.nombre || user?.rol || user?.role)
+  if (roleFromName) return roleFromName
+
+  if (user?.rol_id === 1) return 'admin'
+  if (user?.rol_id === 2) return 'operador'
   return 'operador'
 }
 

@@ -41,7 +41,27 @@
     </div>
 
     <div class="movimientos-section">
-      <h3>{{ authStore.userRole === 'admin' ? 'Todos los Movimientos' : 'Mis Movimientos' }}</h3>
+      <div class="section-header">
+        <h3>{{ vistaMovimientos === 'todos' ? 'Todos los Movimientos' : 'Mis Movimientos' }}</h3>
+        <div v-if="authStore.userRole === 'admin'" class="tabs" aria-label="Filtro de movimientos">
+          <button
+            type="button"
+            class="tab-button"
+            :class="{ active: vistaMovimientos === 'todos' }"
+            @click="vistaMovimientos = 'todos'"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            class="tab-button"
+            :class="{ active: vistaMovimientos === 'mis' }"
+            @click="vistaMovimientos = 'mis'"
+          >
+            Mis Movimientos
+          </button>
+        </div>
+      </div>
       <button @click="fetchMovimientos" class="btn-refresh">Actualizar</button>
 
       <table class="table" v-if="!loading">
@@ -52,7 +72,7 @@
             <th>Tipo</th>
             <th>Cantidad</th>
             <th>Motivo</th>
-            <th v-if="authStore.userRole === 'admin'">Usuario</th>
+            <th v-if="vistaMovimientos === 'todos'">Usuario</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +82,7 @@
             <td><span class="badge" :class="mov.tipo">{{ mov.tipo }}</span></td>
             <td>{{ mov.cantidad }}</td>
             <td>{{ mov.motivo || '-' }}</td>
-            <td v-if="authStore.userRole === 'admin'">
+            <td v-if="vistaMovimientos === 'todos'">
               {{ mov.usuario?.nombre || mov.usuario?.username || '-' }}
             </td>
           </tr>
@@ -75,7 +95,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useMovimientosStore } from '../stores/useMovimientosStore'
 import { useProductosStore } from '../stores/useProductosStore'
@@ -87,6 +107,7 @@ const productosStore = useProductosStore()
 const loading = ref(false)
 const movError = ref(null)
 const movSuccess = ref(null)
+const vistaMovimientos = ref(authStore.userRole === 'admin' ? 'todos' : 'mis')
 
 const movForm = ref({
   producto_id: null,
@@ -96,7 +117,7 @@ const movForm = ref({
 })
 
 const movimientos = computed(() => {
-  return authStore.userRole === 'admin'
+  return vistaMovimientos.value === 'todos'
     ? movimientosStore.movimientos
     : movimientosStore.miMovimientos
 })
@@ -119,6 +140,10 @@ onMounted(() => {
   fetchData()
 })
 
+watch(vistaMovimientos, () => {
+  fetchMovimientos()
+})
+
 const fetchData = async () => {
   loading.value = true
   movError.value = null
@@ -137,7 +162,7 @@ const fetchMovimientos = async () => {
   movError.value = null
 
   try {
-    if (authStore.userRole === 'admin') {
+    if (vistaMovimientos.value === 'todos') {
       await movimientosStore.fetchMovimientos()
     } else {
       await movimientosStore.fetchMisMovimientos()
@@ -217,6 +242,40 @@ h3 {
   border-radius: 8px;
   margin-bottom: 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: inline-flex;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tab-button {
+  background: white;
+  border: none;
+  border-right: 1px solid #ddd;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+}
+
+.tab-button:last-child {
+  border-right: none;
+}
+
+.tab-button.active {
+  background: #2457d6;
+  color: white;
 }
 
 .form {

@@ -5,6 +5,9 @@
       {{ showForm ? 'Cancelar' : 'Nueva Categoría' }}
     </button>
 
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="success" class="success">{{ success }}</div>
+
     <form v-if="showForm" @submit.prevent="handleSave" class="form">
       <div class="form-group">
         <label for="nombre">Nombre:</label>
@@ -15,8 +18,6 @@
         <textarea v-model="formData.descripcion" id="descripcion"></textarea>
       </div>
       <button type="submit" class="btn-success">Guardar</button>
-      <div v-if="error" class="error">{{ error }}</div>
-      <div v-if="success" class="success">{{ success }}</div>
     </form>
 
     <table class="table" v-if="!loading">
@@ -93,12 +94,16 @@ const handleSave = async () => {
 }
 
 const editCategory = (cat) => {
+  error.value = null
+  success.value = null
   formData.value = { ...cat }
   showForm.value = true
 }
 
 const deleteCategory = async (id) => {
   if (!confirm('¿Estás seguro?')) return
+  error.value = null
+  success.value = null
   try {
     await categoriesStore.deleteCategory(id)
     success.value = 'Categoría eliminada'

@@ -9,6 +9,9 @@
       {{ showForm ? 'Cancelar' : 'Nuevo Producto' }}
     </button>
 
+    <div v-if="error" class="error feedback-message">{{ error }}</div>
+    <div v-if="success" class="success feedback-message">{{ success }}</div>
+
     <form v-if="showForm" @submit.prevent="handleSave" class="form">
       <div class="form-group">
         <label for="nombre">Nombre:</label>
@@ -53,8 +56,6 @@
         </select>
       </div>
       <button type="submit" class="btn-success">Guardar</button>
-      <div v-if="error" class="error">{{ error }}</div>
-      <div v-if="success" class="success">{{ success }}</div>
     </form>
 
     <table class="table" v-if="!loading">
@@ -173,6 +174,8 @@ const handleSave = async () => {
 }
 
 const editProducto = (prod) => {
+  error.value = null
+  success.value = null
   formData.value = {
     nombre: prod.nombre,
     descripcion: prod.descripcion || '',
@@ -189,6 +192,8 @@ const editProducto = (prod) => {
 
 const deleteProducto = async (id) => {
   if (!confirm('¿Estás seguro?')) return
+  error.value = null
+  success.value = null
   try {
     await productosStore.deleteProducto(id)
     success.value = 'Producto eliminado'
@@ -359,6 +364,10 @@ tbody tr.stock-low {
   padding: 0.75rem;
   border-radius: 4px;
   grid-column: 1 / 3;
+}
+
+.feedback-message {
+  margin-bottom: 1rem;
 }
 
 .loading {
